@@ -1,0 +1,6 @@
+apix-client:
+    remotes:
+        origin: https://$GITHUB_USER:$GITHUB_TOKEN@github.com/apikcloud/apix-client.git
+    merges:
+        - origin $ODOO_VERSION
+    target: origin $ODOO_VERSION

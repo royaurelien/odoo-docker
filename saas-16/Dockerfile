@@ -5,40 +5,33 @@ SHELL ["/bin/bash", "-xo", "pipefail", "-c"]
 # Generate locale C.UTF-8 for postgres and general locale data
 ENV LANG C.UTF-8
 
-# ARG BUILD_DEPS=" \
-#     build-essential \
-#     libfreetype6-dev \
-#     libfribidi-dev \
-#     libghc-zlib-dev \
-#     libharfbuzz-dev \
-#     libjpeg-dev \
-#     liblcms2-dev \
-#     libldap2-dev \
-#     libopenjp2-7-dev \
-#     libpq-dev \
-#     libsasl2-dev \
-#     libtiff5-dev \
-#     libwebp-dev \
-#     libxml2-dev \
-#     libxslt-dev \
-#     tcl-dev \
-#     tk-dev \
-#     zlib1g-dev"
+ARG BUILD_DEPS=" \
+    build-essential \
+    libfreetype6-dev \
+    libfribidi-dev \
+    libghc-zlib-dev \
+    libharfbuzz-dev \
+    libjpeg-dev \
+    liblcms2-dev \
+    libldap2-dev \
+    libopenjp2-7-dev \
+    libpq-dev \
+    libsasl2-dev \
+    libtiff5-dev \
+    libwebp-dev \
+    libxml2-dev \
+    libxslt-dev \
+    tcl-dev \
+    tk-dev \
+    zlib1g-dev \
+    libcups2-dev \
+    libcurl4-openssl-dev \
+    parallel \
+    libevent-dev \
+    libxslt1-dev"
 
-ARG PYTHON_PACKAGES="\
-    git+https://github.com/OCA/openupgradelib.git \
-    git+https://github.com/apikcloud/git-aggregator.git \
-    click-odoo-contrib \
-    phonenumbers \
-    ipython \
-    pysnooper \
-    ipdb \
-    pg_activity \
-    pysaml2 \
-    geoip2"
-
-# RUN apt-get update \
-#     && apt-get install -yqq --no-install-recommends $BUILD_DEPS
+RUN apt-get update \
+    && apt-get install -yqq --no-install-recommends $BUILD_DEPS
 
 # Install some deps, lessc and less-plugin-clean-css, and wkhtmltopdf
 RUN apt-get update && \
@@ -66,6 +59,7 @@ RUN apt-get update && \
         python3-watchdog \
         python3-xlrd \
         python3-xlwt \
+        python3-dev \
         xz-utils \
         chromium \
         ffmpeg \
@@ -107,6 +101,26 @@ RUN echo 'deb http://apt.postgresql.org/pub/repos/apt/ bullseye-pgdg main' > /et
 RUN npm install -g rtlcss
 
 # Install Python packages
+ARG PYTHON_PACKAGES="\
+    git+https://github.com/OCA/openupgradelib.git \
+    git+https://github.com/apikcloud/git-aggregator.git \
+    click-odoo-contrib \
+    phonenumbers \
+    ipython \
+    pysnooper \
+    ipdb \
+    pg_activity \
+    pysaml2 \
+    geoip2 \
+    boto \
+    odooly \
+    psycopg2 \
+    google-cloud-storage \
+    pysftp \
+    filechunkio \
+    pycurl \
+    redis==2.10.5"
+
 RUN pip install --no-cache-dir $PYTHON_PACKAGES
 
 # Create directory structure
@@ -195,6 +209,7 @@ COPY build.d $RESOURCES/build.d
 COPY conf.d $RESOURCES/conf.d
 COPY entrypoint.d $RESOURCES/entrypoint.d
 COPY entrypoint.sh $RESOURCES/entrypoint.sh
+COPY repos.d/* $RESOURCES/repos.d/
 RUN ln /usr/local/bin/direxec $RESOURCES/entrypoint \
     && ln /usr/local/bin/direxec $RESOURCES/build
 
@@ -216,6 +231,8 @@ COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
 VOLUME ["/home/odoo/data"]
 WORKDIR "/home/odoo"
+
+RUN $RESOURCES/build && sync
 
 # Set default user when running the container
 USER odoo

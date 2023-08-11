@@ -4,7 +4,8 @@ import os
 import subprocess
 import logging
 
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
+_logger.warning("300-aggregate-repositories")
 
 SOURCES = os.environ.get("SOURCES")
 PATH_REPOSITORIES = "%s/repos.d" % (os.environ.get("RESOURCES"))
@@ -20,7 +21,7 @@ for repos, folder in sorted(files):
     file = os.path.join(folder, repos)
     if not os.path.getsize(file):
         continue
-    logger.info("Aggregating repositories from: %s", file)
+    _logger.info("Aggregating repositories from: %s", file)
     subprocess.check_call(
         [
             "autoaggregate",

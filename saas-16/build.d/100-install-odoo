@@ -1,11 +1,16 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 import os
+import logging
+
+_logger = logging.getLogger(__name__)
 
 
 def get_env_bool(key):
     return str(os.environ.get(key)).lower() in ["true", "1"]
 
+
+_logger.warning("100-install-odoo")
 
 SOURCES_PATH = os.environ.get("SOURCES", "/home/odoo/src")
 INSTALL_ODOO = get_env_bool("INSTALL_ODOO")
