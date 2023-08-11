@@ -1,19 +1,62 @@
-version: '3.1'
 services:
-  web:
-    # image: saas-16.3:latest
-    image: test/saas-16.3:latest
-    depends_on:
-      - mydb
-    ports:
-      - "8069:8069"
+  db:
     environment:
-    - HOST=mydb
-    - USER=odoo
-    - PASSWORD=myodoo
-  mydb:
+      PGDATA: /var/lib/postgresql/data/pgdata
+      POSTGRES_DB: postgres
+      POSTGRES_PASSWORD: odoo
+      POSTGRES_USER: odoo
     image: postgres:15
+    platform: linux/x86_64
+    volumes:
+    - db:/var/lib/postgresql/data/pgdata
+  odoo:
+    depends_on:
+    - db
+    - redis
     environment:
-      - POSTGRES_DB=postgres
-      - POSTGRES_PASSWORD=myodoo
-      - POSTGRES_USER=odoo
+      CUSTOM_CONFIG: '[options]'
+      CUSTOM_ENTRYPOINT: '#!/bin/bash'
+      CUSTOM_REQUIREMENTS: ''
+      DISABLE_SESSION_GC: 'true'
+      ENABLE_REDIS: 'False'
+      FIXDBS: 'false'
+      LIMIT_TIME_CPU: 3600
+      LIMIT_TIME_REAL: 3600
+      LIST_DB: 'true'
+      LOG_LEVEL: info
+      MAX_CRON_THREADS: '0'
+      REDIS_DBINDEX: '1'
+      REDIS_HOST: redis
+      REDIS_PASS: xxxxxxxxxxxxxxxxxx
+      REDIS_PORT: '6379'
+      SERVER_MODE: Dev
+      SERVER_WIDE_MODULES: base,web
+      UNACCENT: 'true'
+      WAIT_PG: 'true'
+      WORKERS: '0'
+      DB_MAXCONN: 32
+      ODOO_VERSION: 'saas-16.3'
+      CUSTOM_REPOSITORIES: ''
+    image: apik/odoo-saas:saas-16.3
+    platform: linux/x86_64
+    ports:
+    - 8069:8069
+    stdin_open: 'true'
+    tty: 'true'
+    volumes:
+    - ./repositories:/home/odoo/custom/repositories:rw,z
+    - filestore:/home/odoo/data
+  redis:
+    command: redis-server --save 20 1 --loglevel warning --requirepass xxxxxxxxxxxxxxxxxx
+    image: redis:6.2-alpine
+    ports:
+    - 6379:6379
+    restart: always
+    volumes:
+    - cache:/data
+version: '3.5'
+volumes:
+  cache:
+    driver: local
+  db: null
+  filestore: null
