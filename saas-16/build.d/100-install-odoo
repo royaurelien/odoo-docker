@@ -1,0 +1,16 @@
+#!/usr/bin/python3
+# -*- coding: utf-8 -*-
+import os
+
+
+def get_env_bool(key):
+    return str(os.environ.get(key)).lower() in ["true", "1"]
+
+
+SOURCES_PATH = os.environ.get("SOURCES", "/home/odoo/src")
+INSTALL_ODOO = get_env_bool("INSTALL_ODOO")
+INSTALL_ENTERPRISE = get_env_bool("INSTALL_ENTERPRISE")
+ODOO_SOURCE = os.environ.get("ODOO_SOURCE", "odoo/odoo")
+ODOO_SOURCE_DEPTH = os.environ.get("ODOO_SOURCE_DEPTH")
+ODOO_VERSION = os.environ.get("ODOO_VERSION")
+RESOURCES = os.environ.get("RESOURCES")

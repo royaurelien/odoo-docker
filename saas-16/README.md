@@ -1,0 +1,13 @@
+docker build \
+--build-arg SAAS_PROVIDER_URL='https://www.apik.cloud' \
+--build-arg SAAS_PROVIDER_TOKEN='c528@JUB]M@3ceS@' \
+--build-arg ODOO_VERSION='saas-16.3' \
+--build-arg DOCKER_REPO='apik/odoo-saas' \
+--build-arg GITHUB_USER=${GITHUB_USER} \
+--build-arg GITHUB_TOKEN=${GITHUB_TOKEN} \
+--build-arg GITLAB_USER=${GITLAB_USER} \
+--build-arg GITLAB_TOKEN=${GITLAB_TOKEN} \
+--build-arg MINOR_VERSION=3 \
+--build-arg INSTALL_ODOO=true \
+--build-arg INSTALL_ENTERPRISE=true \
+--tag test/saas-16.3 .
