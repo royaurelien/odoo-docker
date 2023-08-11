@@ -233,6 +233,7 @@ VOLUME ["/home/odoo/data"]
 WORKDIR "/home/odoo"
 
 RUN $RESOURCES/build && sync
+RUN $RESOURCES/build.d/300-aggregate-repositories
 
 # Set default user when running the container
 USER odoo
