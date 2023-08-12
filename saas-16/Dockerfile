@@ -191,7 +191,7 @@ LABEL org.label-schema.schema-version="$VERSION" \
 #     && apt-get -y install --no-install-recommends ./odoo.deb \
 #     && rm -rf /var/lib/apt/lists/* odoo.deb
 
-COPY deb/odoo.deb $PACKAGES_DIR/
+COPY packages/odoo.deb $PACKAGES_DIR/
 
 RUN apt-get update \
     && apt-get -y install --no-install-recommends $PACKAGES_DIR/odoo.deb \
