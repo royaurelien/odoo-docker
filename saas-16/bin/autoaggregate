@@ -60,6 +60,9 @@ def gitaggregate(config):
         [
             "gitaggregate",
             "--expand-env",
+            "--log-level",
+            "ERROR",
+            "--no-color",
             "--config",
             os.path.abspath(config),
             "--jobs",

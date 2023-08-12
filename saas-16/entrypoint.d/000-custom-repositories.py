@@ -34,6 +34,7 @@ if CUSTOM_REPOSITORIES and SOURCES:
     with open(repos_file, "w+") as file:
         file.write(content)
     _logger.info("Aggregating custom repositories..")
+    # _logger.warning(content)
     try:
         check_call(
             [

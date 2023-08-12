@@ -225,12 +225,15 @@ RUN chown -R odoo $RESOURCES \
 EXPOSE 8069 8071 8072
 
 # Set the default config file
-ENV ODOO_RC /etc/odoo/odoo.conf
+# ENV ODOO_RC /etc/odoo/odoo.conf
 
-COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
+# COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
 VOLUME ["/home/odoo/data"]
 WORKDIR "/home/odoo"
+
+# Usefull aliases
+RUN echo "alias odoo-shell='odoo shell --shell-interface ipython --no-http --limit-memory-hard=0 --limit-memory-soft=0'" >> /home/odoo/.bashrc
 
 RUN $RESOURCES/build && sync
 RUN $RESOURCES/build.d/300-aggregate-repositories
