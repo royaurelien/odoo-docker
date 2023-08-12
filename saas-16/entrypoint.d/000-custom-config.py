@@ -1,8 +1,7 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
-import os
 import logging
+import os
 
 _logger = logging.getLogger(__name__)
 

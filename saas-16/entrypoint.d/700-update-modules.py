@@ -1,10 +1,8 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
-
-import os
-from subprocess import check_call
 
 import logging
+import os
+from subprocess import check_call
 
 _logger = logging.getLogger(__name__)
 

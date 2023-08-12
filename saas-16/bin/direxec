@@ -1,10 +1,8 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
+import logging
 import os
 import subprocess
-import sys
-import logging
 
 logger = logging.getLogger(__name__)
 

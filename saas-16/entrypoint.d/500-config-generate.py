@@ -1,11 +1,9 @@
 #!/usr/bin/python3
-# -*- coding: utf-8 -*-
 
+import logging
 import os
 from contextlib import closing
 from string import Template
-
-import logging
 
 _logger = logging.getLogger(__name__)
 
@@ -47,7 +45,7 @@ with closing(StringIO()) as resultfp:
         try:
             # Try to expand variables
             line = Template(line).substitute(os.environ)
-        except KeyError as e:
+        except KeyError:
             # If error, simply ignore this line
             _logger.warning("Skipping config line: %s (missing env)" % (line))
             continue

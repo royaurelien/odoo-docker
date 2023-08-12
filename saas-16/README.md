@@ -27,4 +27,3 @@
     --tag ${DOCKER_REPO}:${ODOO_VERSION} .
 
 ```
-

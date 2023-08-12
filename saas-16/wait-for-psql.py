@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 import argparse
-import psycopg2
 import sys
 import time
 
+import psycopg2
 
 if __name__ == "__main__":
     arg_parser = argparse.ArgumentParser()
