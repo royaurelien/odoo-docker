@@ -1,0 +1,8 @@
+alias odoo-backup='click-odoo-backupdb $PGDATABASE'
+alias odoo-copydb='click-odoo-copydb $PGDATABASE'
+alias odoo-dropdb='click-odoo-dropdb'
+alias odoo-initdb='click-odoo-initdb'
+alias odoo-makepot='click-odoo-makepot'
+alias odoo-restoredb='click-odoo-restoredb -c /home/odoo/.config/odoo.conf --copy --force $PGDATABASE /home/odoo/restore/*.zip'
+alias odoo-uninstall='click-odoo-uninstall -c /home/odoo/.config/odoo.conf -d $PGDATABASE -m'
+alias odoo-update='click-odoo-update -c /home/odoo/.config/odoo.conf -d $PGDATABASE -m'

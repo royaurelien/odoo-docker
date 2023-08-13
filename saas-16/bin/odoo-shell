@@ -1,0 +1,27 @@
+#!/usr/bin/env python3
+"""
+Odoo Shell
+
+Usage:
+  odoo-shell
+"""
+import subprocess
+import os
+
+
+dbname = os.environ.get("PGDATABASE")
+
+cmd = [
+    "odoo",
+    "shell",
+    "--shell-interface",
+    "ipython",
+    "--no-http",
+    "--limit-memory-hard=0",
+    "--limit-memory-soft=0",
+]
+
+if dbname:
+    cmd += ["-d", dbname]
+
+subprocess.run(cmd)

@@ -135,7 +135,8 @@ RUN mkdir -p $SOURCES/repositories && \
     mkdir -p $DATA_DIR && \
     mkdir -p $CONFIG_DIR && \
     mkdir -p $RESOURCES && \
-    mkdir -p $PACKAGES_DIR
+    mkdir -p $PACKAGES_DIR \
+    mkdir -p /home/odoo/restore
 
 # Config env
 ENV OPENERP_SERVER=$CONFIG_DIR/odoo.conf
@@ -156,6 +157,7 @@ ARG GITHUB_USER
 ARG GITHUB_TOKEN
 ENV ODOO_VERSION=saas-16.3
 ARG ODOO_RELEASE=20230807
+ARG ODOO_PACKAGE=odoo_16.3.20230813_all.deb
 ARG ODOO_SOURCE=odoo/odoo
 ARG ODOO_SOURCE_DEPTH=1
 ARG INSTALL_ODOO=false
@@ -191,10 +193,10 @@ LABEL org.label-schema.schema-version="$VERSION" \
 #     && apt-get -y install --no-install-recommends ./odoo.deb \
 #     && rm -rf /var/lib/apt/lists/* odoo.deb
 
-COPY packages/odoo.deb $PACKAGES_DIR/
+COPY packages/$ODOO_PACKAGE $PACKAGES_DIR/
 
 RUN apt-get update \
-    && apt-get -y install --no-install-recommends $PACKAGES_DIR/odoo.deb \
+    && apt-get -y install --no-install-recommends $PACKAGES_DIR/$ODOO_PACKAGE \
     && rm -rf /var/lib/apt/lists/*
 
 RUN git clone https://$GITHUB_USER:$GITHUB_TOKEN@github.com/odoo/enterprise.git --single-branch --depth=1 --branch $ODOO_VERSION $SOURCES/enterprise
@@ -210,18 +212,15 @@ COPY conf.d $RESOURCES/conf.d
 COPY entrypoint.d $RESOURCES/entrypoint.d
 COPY entrypoint.sh $RESOURCES/entrypoint.sh
 COPY repos.d/* $RESOURCES/repos.d/
+COPY profile.d/* /etc/profile.d/
 RUN ln /usr/local/bin/direxec $RESOURCES/entrypoint \
     && ln /usr/local/bin/direxec $RESOURCES/build
 
-# Copy entrypoint script and Odoo configuration file
-# COPY ./entrypoint.sh /
-# COPY ./odoo.conf /etc/odoo/
-
 RUN chown -R odoo $RESOURCES \
-    && chmod -R a+rx $RESOURCES/entrypoint* $RESOURCES/build* /usr/local/bin \
+    && chmod -R a+rx $RESOURCES/entrypoint* $RESOURCES/build* /usr/local/bin /etc/profile.d \
     && sync
 
-# Expose Odoo services
+
 EXPOSE 8069 8071 8072
 
 # Set the default config file
@@ -229,20 +228,24 @@ EXPOSE 8069 8071 8072
 
 # COPY wait-for-psql.py /usr/local/bin/wait-for-psql.py
 
-VOLUME ["/home/odoo/data"]
+VOLUME ["/home/odoo/data", "/home/odoo/restore"]
 WORKDIR "/home/odoo"
 
-# Usefull aliases
-RUN echo "alias odoo-shell='odoo shell --shell-interface ipython --no-http --limit-memory-hard=0 --limit-memory-soft=0'" >> /home/odoo/.bashrc
+ENV CACHE=false
 
 RUN $RESOURCES/build && sync
 RUN $RESOURCES/build.d/300-aggregate-repositories
 
-# Set default user when running the container
 USER odoo
 
-# ENTRYPOINT ["/entrypoint.sh"]
-# CMD ["odoo"]
+RUN echo 'alias odoo-backup="click-odoo-backupdb $PGDATABASE"' >> ~/.bashrc
+RUN echo 'alias odoo-copydb="click-odoo-copydb $PGDATABASE"' >> ~/.bashrc
+RUN echo 'alias odoo-dropdb="click-odoo-dropdb"' >> ~/.bashrc
+RUN echo 'alias odoo-initdb="click-odoo-initdb"' >> ~/.bashrc
+RUN echo 'alias odoo-makepot="click-odoo-makepot"' >> ~/.bashrc
+RUN echo 'alias odoo-restoredb="click-odoo-restoredb -c /home/odoo/.config/odoo.conf --copy --force $PGDATABASE /home/odoo/restore/$PGDATABASE.zip"' >> ~/.bashrc
+RUN echo 'alias odoo-uninstall="click-odoo-uninstall -c /home/odoo/.config/odoo.conf -d $PGDATABASE -m"' >> ~/.bashrc
+RUN echo 'alias odoo-update="click-odoo-update -c /home/odoo/.config/odoo.conf -d $PGDATABASE"' >> ~/.bashrc
 
 ENTRYPOINT ["/home/odoo/.resources/entrypoint.sh"]
 CMD ["odoo"]

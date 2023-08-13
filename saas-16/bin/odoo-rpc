@@ -1,0 +1,84 @@
+#!/usr/bin/env python3
+import os
+import sys
+
+import odoo
+
+# "--addons-path",
+# os.environ["ADDONS_PATH"],
+# "--geoip-db=/usr/share/GeoIP/GeoLite2-City.mmdb",
+# "--smtp",
+# os.environ["SMTP_HOST"],
+# "--smtp-port",
+# os.environ["SMTP_PORT"],
+
+
+def get_odoo_args(args):
+    odoo_args = [
+        "--unaccent",
+        "--no-database-list",
+        "--proxy-mode",
+        "--db_host",
+        os.environ["PGHOST"],
+        "--db_port=5432",
+        "--db-filter=",
+        "--data-dir",
+        "/home/odoo/data",
+        "--config",
+        "/home/odoo/.config/odoo.conf",
+        "--workers=0",
+    ]
+    if not any(arg.startswith("--database") for arg in args):
+        odoo_args.extend(["--database", os.environ["PGDATABASE"]])
+    if not any(arg.startswith("--db_maxconn") for arg in args):
+        odoo_args.append("--db_maxconn=16")
+    if (
+        not any(arg.startswith("--without-demo") for arg in args)
+        and os.environ["ODOO_STAGE"] != "dev"
+    ):
+        odoo_args.append("--without-demo=all")
+    return args + odoo_args
+
+
+odoo_dispatch = odoo.service.model.dispatch
+odoo_logger = odoo.service.model._logger
+odoo_security_check = odoo.service.security.check
+
+db = os.environ["PGDATABASE"]
+
+
+def acquire_job(self):
+    if os.environ["ODOO_VERSION"] >= "15.0":
+        self._process_jobs(db)
+    else:
+        self._acquire_job(db)
+    return False
+
+
+def dispatch(method, params):
+    try:
+        return odoo_dispatch(method, [db, odoo.SUPERUSER_ID, None] + list(params))
+    except Exception as e:
+        msg = "method %s.%s failed during rpc call" % (params[0], params[1])
+        odoo_logger.warning("%s: %s", msg, e)
+        odoo_logger.debug(msg, exc_info=True)
+        raise
+
+
+odoo.service.model.dispatch = dispatch
+if os.environ["ODOO_VERSION"] >= "16.0" and hasattr(odoo.service, "_dispatchers"):
+    # TODO: remove me once revisions set 16.0.20221114 and 16.0.20221121 are invalidated
+    odoo.service._dispatchers["object"] = dispatch
+odoo.service.security.check = lambda db, uid, password: True
+
+
+if __name__ == "__main__":
+    os.environ["ODOO_NOTIFY_CRON_CHANGES"] = "1"
+    args = get_odoo_args(sys.argv[1:])
+    odoo.tools.config.parse_config(args)
+    try:
+        from odoo.addons.base.models import ir_cron
+    except ImportError:
+        from odoo.addons.base.ir import ir_cron
+    ir_cron.ir_cron.acquire_job = acquire_job
+    odoo.service.server.start(preload=[db])

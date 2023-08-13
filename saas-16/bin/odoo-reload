@@ -1,0 +1,11 @@
+#!/usr/bin/env python3
+"""
+Reload Odoo
+
+Usage:
+  odoo-reload
+"""
+from odoo.service import server
+
+
+server.restart()
